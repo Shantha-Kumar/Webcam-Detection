@@ -1,12 +1,16 @@
 import cv2
 import time
+from mail import send_mail
 
 video = cv2.VideoCapture(0)
 time.sleep(1)
 
 first_frame = None
 
+status_list = []
+
 while True:
+    status = 0
     # Starts capturing
     check, frame = video.read()
 
@@ -34,7 +38,14 @@ while True:
             continue
         # getting coordinates and drawing a rectangle
         x, y, w, h = cv2.boundingRect(contour)
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+        rectangle = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+        if rectangle.any():
+            status = 1
+    status_list.append(status)
+    status_list = status_list[-2:]
+
+    if status_list[0] == 1 and status_list[1] == 0:
+        send_mail()
 
     cv2.imshow('My Video', frame)
 
